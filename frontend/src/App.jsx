@@ -1,122 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+/**
+ * App.jsx — Root application shell
+ *
+ * Manages the single-level "routing" between:
+ *   - TicketList  (view === 'list')
+ *   - TicketDetail (view === 'detail', selectedId set)
+ *
+ * No router library needed for this MVP — a simple useState switch
+ * keeps the bundle minimal and the logic transparent.
+ */
+import { useState } from 'react';
+import { ToastProvider } from './components/Toast';
+import TicketList   from './pages/TicketList';
+import TicketDetail from './pages/TicketDetail';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [view,       setView]       = useState('list');   // 'list' | 'detail'
+  const [selectedId, setSelectedId] = useState(null);
+
+  function openTicket(ticketId) {
+    setSelectedId(ticketId);
+    setView('detail');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function backToList() {
+    setView('list');
+    setSelectedId(null);
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <ToastProvider>
+      <div className="app-shell">
 
-      <div className="ticks"></div>
+        {/* ── Top navigation bar ── */}
+        <header className="topbar" role="banner">
+          <div
+            className="topbar-brand"
+            style={{ cursor: view === 'detail' ? 'pointer' : 'default' }}
+            onClick={view === 'detail' ? backToList : undefined}
+            role={view === 'detail' ? 'button' : undefined}
+            tabIndex={view === 'detail' ? 0 : undefined}
+            onKeyDown={view === 'detail' ? e => (e.key === 'Enter' && backToList()) : undefined}
+            aria-label={view === 'detail' ? 'Back to ticket list' : undefined}
+          >
+            <div className="topbar-brand-icon" aria-hidden="true">🎫</div>
+            <span>SupportCRM</span>
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <nav className="topbar-actions" aria-label="Primary navigation">
+            <span style={{
+              fontSize: '0.75rem',
+              color: 'var(--clr-text-muted)',
+              background: 'var(--clr-surface-2)',
+              border: '1px solid var(--clr-border)',
+              borderRadius: '6px',
+              padding: '4px 10px',
+            }}>
+              {view === 'detail' ? `Viewing ${selectedId}` : 'All Tickets'}
+            </span>
+          </nav>
+        </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* ── Main content ── */}
+        <main className="app-main" id="main-content" role="main">
+          {view === 'list' ? (
+            <TicketList onSelect={openTicket} />
+          ) : (
+            <TicketDetail ticketId={selectedId} onBack={backToList} />
+          )}
+        </main>
+
+        {/* ── Footer ── */}
+        <footer style={{
+          textAlign: 'center',
+          padding: '16px',
+          fontSize: '0.75rem',
+          color: 'var(--clr-text-muted)',
+          borderTop: '1px solid var(--clr-border)',
+        }}>
+          SupportCRM MVP · Built with Express + React · {new Date().getFullYear()}
+        </footer>
+
+      </div>
+    </ToastProvider>
+  );
 }
-
-export default App
