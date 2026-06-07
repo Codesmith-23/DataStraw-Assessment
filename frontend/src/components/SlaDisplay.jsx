@@ -14,15 +14,15 @@ export default function SlaDisplay({ deadline }) {
       
       if (diff <= 0) {
         setBreached(true);
-        setTimeLeft('SLA Breached');
+        setTimeLeft('SLA BREACHED');
       } else {
         setBreached(false);
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         if (hours > 0) {
-          setTimeLeft(`${hours}h ${mins}m left`);
+          setTimeLeft(`${hours}h ${mins}m remaining`);
         } else {
-          setTimeLeft(`${mins}m left`);
+          setTimeLeft(`${mins}m remaining`);
         }
       }
     }
@@ -32,12 +32,10 @@ export default function SlaDisplay({ deadline }) {
     return () => clearInterval(interval);
   }, [deadline]);
 
-  if (!deadline) return <span className="sla-ok">—</span>;
+  if (!deadline) return <span className="sla-fintech-ok">—</span>;
 
   return (
-    <span className={breached ? 'sla-breached' : 'sla-ok'}>
-      {breached && <span style={{fontSize: '1.1em'}}>⚠</span>}
-      {!breached && <span style={{fontSize: '1.1em', opacity: 0.7}}>⏱</span>}
+    <span className={breached ? 'sla-fintech-breached' : 'sla-fintech-ok'}>
       {timeLeft}
     </span>
   );

@@ -8,14 +8,14 @@
  */
 import { useState } from 'react';
 import { ticketsApi } from '../api';
-import { useToast }   from './Toast';
+import { useToast } from './Toast';
 
 const INITIAL = {
-  customer_name:  '',
+  customer_name: '',
   customer_email: '',
-  subject:        '',
-  description:    '',
-  priority:       'Low',
+  subject: '',
+  description: '',
+  priority: 'Low',
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,8 +36,8 @@ function validate(f) {
 export default function CreateTicketModal({ onClose, onCreated }) {
   const toast = useToast();
 
-  const [form,    setForm]    = useState(INITIAL);
-  const [errors,  setErrors]  = useState({});
+  const [form, setForm] = useState(INITIAL);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   function handleChange(e) {
@@ -55,11 +55,11 @@ export default function CreateTicketModal({ onClose, onCreated }) {
     setLoading(true);
     try {
       const res = await ticketsApi.create({
-        customer_name:  form.customer_name.trim(),
+        customer_name: form.customer_name.trim(),
         customer_email: form.customer_email.trim(),
-        subject:        form.subject.trim(),
-        description:    form.description.trim(),
-        priority:       form.priority,
+        subject: form.subject.trim(),
+        description: form.description.trim(),
+        priority: form.priority,
       });
       toast('Ticket created successfully!', 'success');
       onCreated(res.data);
@@ -96,7 +96,7 @@ export default function CreateTicketModal({ onClose, onCreated }) {
                 name="customer_name"
                 type="text"
                 className={`form-input${errors.customer_name ? ' error' : ''}`}
-                placeholder="Jane Smith"
+                placeholder="User"
                 value={form.customer_name}
                 onChange={handleChange}
                 autoComplete="name"
@@ -113,7 +113,7 @@ export default function CreateTicketModal({ onClose, onCreated }) {
                 name="customer_email"
                 type="email"
                 className={`form-input${errors.customer_email ? ' error' : ''}`}
-                placeholder="jane@example.com"
+                placeholder="user@example.com"
                 value={form.customer_email}
                 onChange={handleChange}
                 autoComplete="email"
@@ -160,7 +160,7 @@ export default function CreateTicketModal({ onClose, onCreated }) {
               <select
                 id="ct-priority"
                 name="priority"
-                className="form-select"
+                className="select-fintech"
                 value={form.priority}
                 onChange={handleChange}
               >
