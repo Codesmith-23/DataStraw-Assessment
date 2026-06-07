@@ -15,6 +15,7 @@ const INITIAL = {
   customer_email: '',
   subject:        '',
   description:    '',
+  priority:       'Low',
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -58,6 +59,7 @@ export default function CreateTicketModal({ onClose, onCreated }) {
         customer_email: form.customer_email.trim(),
         subject:        form.subject.trim(),
         description:    form.description.trim(),
+        priority:       form.priority,
       });
       toast('Ticket created successfully!', 'success');
       onCreated(res.data);
@@ -151,6 +153,22 @@ export default function CreateTicketModal({ onClose, onCreated }) {
               {errors.description && (
                 <span className="field-error">⚠ {errors.description}</span>
               )}
+            </div>
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="ct-priority">Priority</label>
+              <select
+                id="ct-priority"
+                name="priority"
+                className="form-select"
+                value={form.priority}
+                onChange={handleChange}
+              >
+                <option value="Low">Low (48h SLA)</option>
+                <option value="Medium">Medium (24h SLA)</option>
+                <option value="High">High (6h SLA)</option>
+                <option value="Urgent">Urgent (2h SLA)</option>
+              </select>
             </div>
 
           </div>

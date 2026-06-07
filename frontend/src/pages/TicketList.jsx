@@ -8,6 +8,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ticketsApi }     from '../api';
 import { formatDate, debounce } from '../utils';
 import StatusBadge        from '../components/StatusBadge';
+import PriorityBadge      from '../components/PriorityBadge';
+import SlaDisplay         from '../components/SlaDisplay';
 import CreateTicketModal  from '../components/CreateTicketModal';
 
 const STATUS_OPTIONS = ['', 'Open', 'In Progress', 'Closed'];
@@ -222,6 +224,8 @@ export default function TicketList({ onSelect }) {
                   <th>Customer</th>
                   <th>Email</th>
                   <th>Status</th>
+                  <th>Priority</th>
+                  <th>SLA</th>
                   <th>Created</th>
                 </tr>
               </thead>
@@ -240,6 +244,8 @@ export default function TicketList({ onSelect }) {
                     <td>{t.customer_name}</td>
                     <td style={{ color: 'var(--clr-text-muted)', fontSize: '0.82rem' }}>{t.customer_email}</td>
                     <td><StatusBadge status={t.status} /></td>
+                    <td><PriorityBadge priority={t.priority} /></td>
+                    <td><SlaDisplay deadline={t.sla_deadline} /></td>
                     <td style={{ color: 'var(--clr-text-muted)', fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
                       {formatDate(t.created_at)}
                     </td>

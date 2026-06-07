@@ -255,6 +255,16 @@ code, .mono {
 .badge-closed   { background: #f1f5f9; color: #1e293b; }
 .badge-closed   .badge-dot { background: #94a3b8; }
 
+/* ── Priority Badges ───────────────────────────────────────── */
+.badge-urgent { background: #fee2e2; color: #991b1b; } /* red-100 text-red-800 */
+.badge-high   { background: #fef3c7; color: #92400e; } /* amber-100 text-amber-800 */
+.badge-medium { background: #e0f2fe; color: #075985; } /* sky-100 text-sky-800 */
+.badge-low    { background: #d1fae5; color: #065f46; } /* emerald-100 text-emerald-800 */
+
+/* ── SLA Display ───────────────────────────────────────────── */
+.sla-breached { color: var(--clr-danger); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; font-size: 0.82rem; }
+.sla-ok { color: var(--clr-text-muted); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; font-size: 0.82rem; }
+
 /* ── Forms ─────────────────────────────────────────────────── */
 .form-group {
   display: flex;

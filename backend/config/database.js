@@ -34,6 +34,9 @@ const SCHEMA = `
     description    TEXT    NOT NULL,
     status         TEXT    NOT NULL DEFAULT 'Open'
                            CHECK(status IN ('Open', 'In Progress', 'Closed')),
+    priority       TEXT    NOT NULL DEFAULT 'Low'
+                           CHECK(priority IN ('Low', 'Medium', 'High', 'Urgent')),
+    sla_deadline   TEXT,
     created_at     TEXT    NOT NULL
                            DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     updated_at     TEXT    NOT NULL
@@ -63,9 +66,14 @@ const SCHEMA = `
   );
 
   /* ── indexes ─────────────────────────────────────────────── */
-  CREATE INDEX IF NOT EXISTS idx_notes_ticket_id  ON notes(ticket_id);
-  CREATE INDEX IF NOT EXISTS idx_tickets_status   ON tickets(status);
-  CREATE INDEX IF NOT EXISTS idx_tickets_email    ON tickets(customer_email);
+  CREATE INDEX IF NOT EXISTS idx_notes_ticket_id    ON notes(ticket_id);
+  CREATE INDEX IF NOT EXISTS idx_tickets_status     ON tickets(status);
+  CREATE INDEX IF NOT EXISTS idx_tickets_email      ON tickets(customer_email);
+`;
+
+const INDEXES_SCHEMA = `
+  CREATE INDEX IF NOT EXISTS idx_tickets_priority   ON tickets(priority);
+  CREATE INDEX IF NOT EXISTS idx_tickets_sla        ON tickets(sla_deadline);
 `;
 
 /* ─────────────────────────────────────────────────────────────
@@ -104,8 +112,33 @@ async function initDb() {
   // Apply schema (idempotent — IF NOT EXISTS guards every statement)
   db.run(SCHEMA);
 
+  // ── Live migration ──────────────────────────────────────────
+  // Adds priority / sla_deadline to pre-existing databases.
+  //
+  // IMPORTANT: SQLite forbids NOT NULL on ALTER TABLE ADD COLUMN
+  // (even with a DEFAULT) in the version bundled by sql.js.
+  // The NOT NULL + CHECK constraints in the CREATE TABLE schema
+  // above protect new databases; here we only need the DEFAULT
+  // so old rows get a sensible fallback value.
+  //
+  // Errors are silently swallowed — the column already existing
+  // is the only expected failure case.
+  const migrations = [
+    `ALTER TABLE tickets ADD COLUMN priority     TEXT DEFAULT 'Low'`,
+    `ALTER TABLE tickets ADD COLUMN sla_deadline TEXT`,
+  ];
+  for (const migSql of migrations) {
+    try {
+      db.run(migSql);
+      console.log(`[DB] Migration applied: ${migSql.trim().slice(0, 60)}…`);
+    } catch (_) { /* column already exists — safe to ignore */ }
+  }
+
   // Initial persist to create the file if it didn't exist
   persist();
+
+  // Apply new indexes after ensuring columns exist
+  db.run(INDEXES_SCHEMA);
 
   console.log(`[DB] SQLite initialised → ${DB_PATH}`);
   return db;

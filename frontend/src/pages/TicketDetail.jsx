@@ -9,6 +9,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { ticketsApi }       from '../api';
 import { formatDate }       from '../utils';
 import StatusBadge          from '../components/StatusBadge';
+import PriorityBadge        from '../components/PriorityBadge';
+import SlaDisplay           from '../components/SlaDisplay';
 import UpdateTicketPanel    from '../components/UpdateTicketPanel';
 
 export default function TicketDetail({ ticketId, onBack }) {
@@ -103,6 +105,14 @@ export default function TicketDetail({ ticketId, onBack }) {
                 <a className="detail-meta-value" href={`mailto:${ticket.customer_email}`} style={{ color: 'var(--clr-primary)', fontSize: '0.9rem' }}>
                   {ticket.customer_email}
                 </a>
+              </div>
+              <div className="detail-meta-item">
+                <span className="detail-meta-label">Priority</span>
+                <span className="detail-meta-value"><PriorityBadge priority={ticket.priority} /></span>
+              </div>
+              <div className="detail-meta-item">
+                <span className="detail-meta-label">SLA Deadline</span>
+                <span className="detail-meta-value"><SlaDisplay deadline={ticket.sla_deadline} /></span>
               </div>
               <div className="detail-meta-item">
                 <span className="detail-meta-label">Created</span>

@@ -22,9 +22,33 @@ const {
    VALIDATION HELPERS
    ───────────────────────────────────────────────────────────── */
 
-const VALID_STATUSES = ['Open', 'In Progress', 'Closed'];
+const VALID_STATUSES   = ['Open', 'In Progress', 'Closed'];
+const VALID_PRIORITIES = ['Low', 'Medium', 'High', 'Urgent'];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/* ─────────────────────────────────────────────────────────────
+   SLA HELPER
+   Maps a priority tier to an ISO-8601 deadline string based on
+   the current server time.
+
+     Urgent →  +2 hours
+     High   →  +6 hours
+     Medium → +24 hours
+     Low    → +48 hours
+   ───────────────────────────────────────────────────────────── */
+const SLA_HOURS = { Urgent: 2, High: 6, Medium: 24, Low: 48 };
+
+/**
+ * Compute an ISO-8601 SLA deadline string from the current time.
+ * @param {string} priority  One of VALID_PRIORITIES
+ * @returns {string}  e.g. "2026-06-08T04:07:24.000Z"
+ */
+function computeSlaDeadline(priority) {
+  const hours = SLA_HOURS[priority] ?? SLA_HOURS.Low;
+  const deadline = new Date(Date.now() + hours * 60 * 60 * 1000);
+  return deadline.toISOString();
+}
 
 /**
  * Validate a POST /api/tickets request body.
@@ -32,7 +56,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  */
 function validateCreateBody(body) {
   const fields = {};
-  const { customer_name, customer_email, subject, description } = body || {};
+  const { customer_name, customer_email, subject, description, priority } = body || {};
 
   if (!customer_name || typeof customer_name !== 'string' ||
       customer_name.trim().length < 2 || customer_name.trim().length > 100) {
@@ -52,6 +76,11 @@ function validateCreateBody(body) {
   if (!description || typeof description !== 'string' ||
       description.trim().length < 10 || description.trim().length > 2000) {
     fields.description = 'Required. Must be between 10 and 2000 characters.';
+  }
+
+  // priority is optional — defaults to 'Low' when omitted
+  if (priority !== undefined && !VALID_PRIORITIES.includes(priority)) {
+    fields.priority = `Must be one of: ${VALID_PRIORITIES.join(', ')}.`;
   }
 
   return fields;
@@ -128,27 +157,39 @@ async function createTicket(req, res) {
       customer_email,
       subject,
       description,
+      priority = 'Low',   // default when caller omits the field
     } = req.body;
+
+    // Compute the SLA deadline before entering the transaction
+    const sla_deadline = computeSlaDeadline(priority);
 
     const created = transaction(() => {
       const ticketId = generateTicketId();
 
       runInTx(
         `INSERT INTO tickets
-           (ticket_id, customer_name, customer_email, subject, description)
+           (ticket_id, customer_name, customer_email, subject, description,
+            priority, sla_deadline)
          VALUES
-           (:ticket_id, :customer_name, :customer_email, :subject, :description)`,
+           (:ticket_id, :customer_name, :customer_email, :subject, :description,
+            :priority, :sla_deadline)`,
         {
           ':ticket_id':      ticketId,
           ':customer_name':  customer_name.trim(),
           ':customer_email': customer_email.trim().toLowerCase(),
           ':subject':        subject.trim(),
           ':description':    description.trim(),
+          ':priority':       priority,
+          ':sla_deadline':   sla_deadline,
         }
       );
 
       return queryOne(
-        'SELECT ticket_id, customer_name, customer_email, subject, status, created_at FROM tickets WHERE ticket_id = :id',
+        `SELECT
+           ticket_id, customer_name, customer_email,
+           subject, status, priority, sla_deadline, created_at
+         FROM tickets
+         WHERE ticket_id = :id`,
         { ':id': ticketId }
       );
     });
@@ -236,6 +277,8 @@ async function getTickets(req, res) {
          t.customer_email,
          t.subject,
          t.status,
+         t.priority,
+         t.sla_deadline,
          t.created_at,
          t.updated_at
        FROM tickets t
@@ -279,6 +322,7 @@ async function getTicket(req, res) {
       `SELECT
          ticket_id, customer_name, customer_email,
          subject, description, status,
+         priority, sla_deadline,
          created_at, updated_at
        FROM tickets
        WHERE ticket_id = :id`,
