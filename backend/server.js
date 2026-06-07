@@ -156,7 +156,7 @@ if (NODE_ENV === 'production') {
   );
 
   /* SPA catch-all: return index.html for every non-file, non-API route */
-  app.get('*', (_req, res) => {
+  app.get('/(.*)', (_req, res) => {
     res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
   });
 }
