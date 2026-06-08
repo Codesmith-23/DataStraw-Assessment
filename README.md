@@ -79,7 +79,7 @@ DataStraw-Assessment/
 │
 ├── package.json                  # ROOT: CI/CD deployment & build scripts
 └── README.md
-
+```
 
 ## 🚀 Setup and Local Installation
 
