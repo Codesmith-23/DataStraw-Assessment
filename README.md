@@ -9,8 +9,7 @@ This application was designed to provide a high-throughput environment for suppo
 ## 🔗 Live Links
 * **Live Demo:** [Insert Render URL here]
 * **Video Walkthrough:** [Insert Loom Link here]
-  > *Note: The application is deployed on Render's free tier, which utilizes an ephemeral disk. The local SQLite database will reset to zero tickets after 15 minutes of server inactivity. Please watch the video walkthrough to see the populated data in action.*
-
+ 
 ---
 
 ## ✨ Core Features
