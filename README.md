@@ -6,12 +6,6 @@ This application was designed to provide a high-throughput environment for suppo
 
 ---
 
-## 🔗 Live Links
-* **Live Demo:** [Insert Render URL here]
-* **Video Walkthrough:** [Insert Loom Link here]
- 
----
-
 ## ✨ Core Features
 
 * **Full Ticket Lifecycle Management:** End-to-end CRUD capabilities allowing agents to create detailed support requests, update statuses (Open, In Progress, Resolved), and manage data seamlessly through RESTful API integration.
